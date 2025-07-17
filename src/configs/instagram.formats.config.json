@@ -15,17 +15,23 @@
       "resolution": "640x360",
       "type": "video"
     },
-
     {
-      "label": "607p mp4 (audio+video)",
+      "label": "1080×607 mp4 (video only)",
       "format_id": "2",
       "ext": "mp4",
       "resolution": "1080x607",
-      "type": "audio+video"
+      "type": "video"
+    },
+    {
+      "label": "720p mp4 (video only)",
+      "format_id": "dash-582076497987570_mpd_qe=UNKNOWN_v",
+      "ext": "mp4",
+      "resolution": "1280x720",
+      "type": "video"
     },
     {
       "label": "720p mp4 (audio+video)",
-      "format_id": "dash-582076497987570_mpd_qe=UNKNOWN_v",
+      "format_id": "dash-582076497987570_mpd_qe=UNKNOWN_v+dash-637144775177475ad",
       "ext": "mp4",
       "resolution": "1280x720",
       "type": "audio+video"

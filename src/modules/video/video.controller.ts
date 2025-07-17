@@ -27,8 +27,14 @@ export class VideoController {
     return this.videoService.listFormats(decoded, source);
   }
 
+  //check format_id example you need format_id X, printerest,
+  @Get('bantumlum')
+  bantumlum(@Query('url') url: string) {
+    return this.videoService.BanTumLum(url);
+  }
+
   @Get('download')
-  async download(
+  async mergeDownload(
     @Query('url') url: string,
     @Query('format') format: string,
     @Res() res: Response,
@@ -44,35 +50,40 @@ export class VideoController {
     if (!cfg) {
       throw new BadRequestException('Nguồn không được hỗ trợ');
     }
-
-    const chooseOpt = cfg.formats.find((f) => f.format_id === decodedFormat);
-    if (!chooseOpt) {
+    if (!cfg.formats.some((f) => f.format_id === decodedFormat)) {
       throw new BadRequestException(`Định dạng ${decodedFormat} không tồn tại`);
     }
-    const ext = chooseOpt.ext;
 
-    const stream = this.videoService.download(decodedUrl, decodedFormat, ext);
-
-    const { title } = await this.videoService.metaData(decodedUrl);
-    const safeName = (title ?? `video_${Date.now()}`)
+    const ext = cfg.formats.find((f) => f.format_id === decodedFormat)!.ext;
+    const { title } = await this.videoService.metaData(url);
+    const safeName = `${title || `video_${Date.now()}`} `
       .replace(/[\r\n]+/g, ' ')
       .replace(/[\/\\?%*:|"<>]/g, '')
       .trim()
       .replace(/\s+/g, '_');
     const filename = `${safeName}.${ext}`;
 
-    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Type', 'video/mp4');
     res.setHeader('Content-Disposition', contentDisposition(filename));
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.flushHeaders();
 
+    const stream = await this.videoService.mergeAndStream(
+      decodedUrl,
+      decodedFormat,
+      ext,
+    );
     stream.pipe(res);
+
     stream.on('error', (err) => {
-      console.error('Download stream error:', err);
+      console.error('Stream error:', err);
       if (!res.headersSent) {
         res.status(500).json({
-          message:
-            'Không tải được video! Có thể link không tồn tại hoặc bị lỗi.',
+          message: 'Không tải được video!',
           detail: err.message,
         });
+      } else {
+        res.end();
       }
     });
   }

@@ -1,8 +1,8 @@
 import { Inject, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { VideoModule } from './module/video/video.module';
 import { ConfigModule } from '@nestjs/config';
+import { VideoModule } from './modules/video/video.module';
 
 @Module({
   imports: [

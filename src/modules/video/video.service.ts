@@ -22,11 +22,46 @@ export class VideoService {
         noWarnings: true,
         preferFreeFormats: true,
       });
-      console.log(title);
       return { title };
     } catch (error) {
       throw new HttpException(
         'Lỗi Url Lấy Thông Tin Tên File',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  //check format_id
+  async BanTumLum(url: string) {
+    try {
+      const raw: any = await youtubeDl(url, {
+        dumpSingleJson: true,
+        noCheckCertificates: true,
+        noWarnings: true,
+        preferFreeFormats: true,
+      });
+      return raw;
+    } catch (error) {
+      throw new HttpException(
+        'Lỗi Url Lấy Thông Tin Tên File',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async getDirectUrl(url: string, format: string): Promise<string> {
+    try {
+      const direct: any = await youtubeDl(url, {
+        format,
+        getUrl: true,
+        noCheckCertificates: true,
+        noWarnings: true,
+        preferFreeFormats: true,
+      });
+      return direct.trim();
+    } catch (err) {
+      throw new HttpException(
+        'Không thể lấy direct URL',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -82,54 +117,56 @@ export class VideoService {
     };
   }
 
-  download(url: string, format: string, ext: string): PassThrough {
+  async mergeAndStream(
+    url: string,
+    format: string,
+    ext: string,
+  ): Promise<PassThrough> {
     const stream = new PassThrough();
-    const path = this.configService.get<string>('YTDL_PATH') || 'yt-dlp';
-    if (!path) {
-      throw new HttpException('Không tìm thấy yt-dlp', HttpStatus.BAD_REQUEST);
-    }
-    const args = [
-      url,
-      '-f',
-      format,
-      '-o',
-      '-',
-      '--no-check-certificates',
-      '--no-warnings',
-      '--prefer-free-formats',
-    ];
+
+    let videoUrl: string;
+    let audioUrl: string | null = null;
+
     if (format.includes('+')) {
-      args.push(
-        '--merge-output-format',
-        ext,
-        '--ffmpeg-location',
-        ffmpegPath!,
-        '--postprocessor-args',
-        '-movflags +frag_keyframe+empty_moov+faststart',
-      );
+      const [vid, adu] = format.split('+');
+      [videoUrl, audioUrl] = await Promise.all([
+        this.getDirectUrl(url, vid),
+        this.getDirectUrl(url, adu),
+      ]);
+    } else {
+      videoUrl = await this.getDirectUrl(url, format);
     }
-    console.log('Spawning yt-dlp with args:', args);
-    const proc = spawn(path, args);
 
-    let stderr = '';
+    const args: string[] = [];
+    args.push('-i', videoUrl);
+    if (audioUrl) {
+      args.push('-i', audioUrl);
+    }
+    args.push(
+      '-c:v',
+      'copy',
+      '-c:a',
+      'copy',
+      '-f',
+      ext,
+      '-movflags',
+      '+frag_keyframe+empty_moov+faststart',
+      'pipe:1',
+    );
+
+    const proc = spawn(ffmpegPath!, args, {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
     proc.stdout.pipe(stream);
+    let stderr = '';
     proc.stderr.on('data', (chunk) => {
-      const msg = chunk.toString();
-      stderr += msg;
-      console.warn('[yt-dlp stderr]', msg.trim());
+      stderr += chunk.toString();
     });
-
-    proc.on('error', (err) => {
-      stream.emit('error', new Error(`Spawn process failed: ${err.message}`));
-    });
-
+    proc.on('error', (err) => stream.emit('error', err));
     proc.on('close', (code) => {
-      console.log(`yt-dlp exited with code ${code}`);
       if (code !== 0) {
-        stream.emit(
-          'error',
-          new Error(`yt-dlp exited with code ${code}\n${stderr}`),
-        );
+        stream.emit('error', new Error(`ffmpeg exited ${code}\n${stderr}`));
       }
     });
 
