@@ -31,6 +31,23 @@ export class VideoService {
     }
   }
 
+  async getThumbnails(url: string) {
+    try {
+      const raw: any = await youtubeDl(url, {
+        dumpSingleJson: true,
+        noCheckCertificates: true,
+        noWarnings: true,
+        preferFreeFormats: true,
+      });
+      return raw.thumbnail;
+    } catch (error) {
+      throw new HttpException(
+        'Lỗi Url Lấy Thông Tin Tên File',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
   //check format_id
   async BanTumLum(url: string) {
     try {

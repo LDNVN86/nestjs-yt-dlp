@@ -33,6 +33,13 @@ export class VideoController {
     return this.videoService.BanTumLum(url);
   }
 
+  @Get('thumbnail')
+  getThumbnail(@Query('url') url: string) {
+    if (!url) throw new BadRequestException('Missing "url" query parameter');
+    const decoded: string = decodeURIComponent(url);
+    return this.videoService.getThumbnails(decoded);
+  }
+
   @Get('download')
   async mergeDownload(
     @Query('url') url: string,
