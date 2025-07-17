@@ -1,0 +1,47 @@
+{
+  "source": "tiktok",
+  "formats": [
+    {
+      "label": "576 video (audio+video)",
+      "format_id": "bytevc1_540p_1031392-0",
+      "ext": "mp4",
+      "resolution": "1026x576",
+      "type": "audio+video"
+    },
+    {
+      "label": "576 video (audio+video)",
+      "format_id": "bytevc1_540p_1031392-1",
+      "ext": "mp4",
+      "resolution": "1026x576",
+      "type": "audio+video"
+    },
+    {
+      "label": "540p video (audio+video)",
+      "format_id": "h264_540p_1752652-0",
+      "ext": "mp4",
+      "resolution": "576x1024",
+      "type": "audio+video"
+    },
+    {
+      "label": "540p video (audio+video)",
+      "format_id": "bytevc1_720p_1215940-1",
+      "ext": "mp4",
+      "resolution": "576x1024",
+      "type": "audio+video"
+    },
+    {
+      "label": "720p video (audio+video)",
+      "format_id": "bytevc1_720p_1215940-1",
+      "ext": "mp4",
+      "resolution": "1282x720",
+      "type": "audio+video"
+    },
+    {
+      "label": "1080p video (audio+video)",
+      "format_id": "bytevc1_1080p_2461716-0",
+      "ext": "mp4",
+      "resolution": "1080x1920",
+      "type": "audio+video"
+    }
+  ]
+}

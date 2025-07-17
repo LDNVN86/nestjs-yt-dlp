@@ -1,0 +1,40 @@
+{
+  "source": "facebook",
+  "formats": [
+    {
+      "label": "Audio only (m4a)",
+      "format_id": "bestaudio",
+      "ext": "m4a",
+      "resolution": "audio only",
+      "type": "audio"
+    },
+    {
+      "label": "SD mp4 (video only)",
+      "format_id": "sd",
+      "ext": "mp4",
+      "resolution": "640x360",
+      "type": "video"
+    },
+    {
+      "label": "HD mp4 (video only)",
+      "format_id": "hd",
+      "ext": "mp4",
+      "resolution": "1280x720",
+      "type": "video"
+    },
+    {
+      "label": "SD mp4 (audio+video)",
+      "format_id": "sd",
+      "ext": "mp4",
+      "resolution": "640x360",
+      "type": "audio+video"
+    },
+    {
+      "label": "HD mp4 (audio+video)",
+      "format_id": "hd",
+      "ext": "mp4",
+      "resolution": "1280x720",
+      "type": "audio+video"
+    }
+  ]
+}

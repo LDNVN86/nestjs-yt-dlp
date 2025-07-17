@@ -1,0 +1,117 @@
+{
+  "source": "youtube",
+  "formats": [
+    {
+      "label": "Audio only (m4a)",
+      "format_id": "140",
+      "ext": "m4a",
+      "resolution": "audio only",
+      "type": "audio"
+    },
+    {
+      "label": "Audio only (webm)",
+      "format_id": "251",
+      "ext": "webm",
+      "resolution": "audio only",
+      "type": "audio"
+    },
+    {
+      "label": "360p mp4 (video only)",
+      "format_id": "134",
+      "ext": "mp4",
+      "resolution": "640x360",
+      "type": "video"
+    },
+    {
+      "label": "480p mp4 (video only)",
+      "format_id": "135",
+      "ext": "mp4",
+      "resolution": "854x480",
+      "type": "video"
+    },
+    {
+      "label": "720p mp4 (video only)",
+      "format_id": "136",
+      "ext": "mp4",
+      "resolution": "1280x720",
+      "type": "video"
+    },
+    {
+      "label": "1080p mp4 (video only)",
+      "format_id": "137",
+      "ext": "mp4",
+      "resolution": "1920x1080",
+      "type": "video"
+    },
+    {
+      "label": "360p webm (video only)",
+      "format_id": "243",
+      "ext": "webm",
+      "resolution": "640x360",
+      "type": "video"
+    },
+    {
+      "label": "480p webm (video only)",
+      "format_id": "244",
+      "ext": "webm",
+      "resolution": "854x480",
+      "type": "video"
+    },
+    {
+      "label": "720p webm (video only)",
+      "format_id": "247",
+      "ext": "webm",
+      "resolution": "1280x720",
+      "type": "video"
+    },
+    {
+      "label": "1080p webm (video only)",
+      "format_id": "248",
+      "ext": "webm",
+      "resolution": "1920x1080",
+      "type": "video"
+    },
+    {
+      "label": "360p mp4 (audio+video)",
+      "format_id": "18",
+      "ext": "mp4",
+      "resolution": "640x360",
+      "type": "audio+video"
+    },
+    {
+      "label": "480p mp4 (audio+video)",
+      "format_id": "135+140",
+      "ext": "mp4",
+      "resolution": "854x480",
+      "type": "audio+video"
+    },
+    {
+      "label": "720p mp4 (audio+video)",
+      "format_id": "22",
+      "ext": "mp4",
+      "resolution": "1280x720",
+      "type": "audio+video"
+    },
+    {
+      "label": "1080p mp4 (merge audio)",
+      "format_id": "137+140",
+      "ext": "mp4",
+      "resolution": "1920x1080",
+      "type": "audio+video"
+    },
+    {
+      "label": "2K webm (merge audio)",
+      "format_id": "271+140",
+      "ext": "webm",
+      "resolution": "2560x1440",
+      "type": "audio+video"
+    },
+    {
+      "label": "4K webm (merge audio)",
+      "format_id": "313+140",
+      "ext": "webm",
+      "resolution": "3840x2160",
+      "type": "audio+video"
+    }
+  ]
+}
