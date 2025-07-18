@@ -7,18 +7,38 @@ import {
 import { PassThrough } from 'stream';
 import { spawn } from 'child_process';
 import { FORMATS_CONFIG, Source } from 'src/constants';
-import { youtubeDl } from 'youtube-dl-exec';
+// import { ytdlp } from 'youtube-dl-exec';
+import ytdlp from 'yt-dlp-exec';
 import { ConfigService } from '@nestjs/config';
 import ffmpegPath from 'ffmpeg-static';
 @Injectable()
 export class VideoService {
   constructor(private readonly configService: ConfigService) {}
 
+  // private getBaseYtdlpOptions() {
+  //   const agent = this.configService.get<string>('USER_AGENT');
+  //   const cookieFile = this.configService.get<string>('YTDLP_COOKIE_FILE');
+  //   const referer = this.configService.get<string>('TIKTOK_REFERER');
+
+  //   return {
+  //     dumpSingleJson: true,
+  //     noCheckCertificate: true,
+  //     noWarnings: true,
+  //     preferFreeFormats: true,
+  //     addHeader: [`User-Agent: ${agent}`, `Referer: ${referer}`],
+  //     extractorArgs: {
+  //       tiktok: {
+  //         cookiefile: cookieFile,
+  //       },
+  //     },
+  //   } as const;
+  // }
+
   async metaData(url: string): Promise<{ title: string }> {
     try {
-      const { title }: any = await youtubeDl(url, {
+      const { title }: any = await ytdlp(url, {
         dumpSingleJson: true,
-        noCheckCertificates: true,
+        noCheckCertificate: true,
         noWarnings: true,
         preferFreeFormats: true,
       });
@@ -33,9 +53,9 @@ export class VideoService {
 
   async getThumbnails(url: string) {
     try {
-      const raw: any = await youtubeDl(url, {
+      const raw: any = await ytdlp(url, {
         dumpSingleJson: true,
-        noCheckCertificates: true,
+        noCheckCertificate: true,
         noWarnings: true,
         preferFreeFormats: true,
       });
@@ -51,9 +71,9 @@ export class VideoService {
   //check format_id
   async BanTumLum(url: string) {
     try {
-      const raw: any = await youtubeDl(url, {
+      const raw: any = await ytdlp(url, {
         dumpSingleJson: true,
-        noCheckCertificates: true,
+        noCheckCertificate: true,
         noWarnings: true,
         preferFreeFormats: true,
       });
@@ -68,10 +88,10 @@ export class VideoService {
 
   async getDirectUrl(url: string, format: string): Promise<string> {
     try {
-      const direct: any = await youtubeDl(url, {
+      const direct: any = await ytdlp(url, {
         format,
         getUrl: true,
-        noCheckCertificates: true,
+        noCheckCertificate: true,
         noWarnings: true,
         preferFreeFormats: true,
       });
@@ -92,12 +112,11 @@ export class VideoService {
         HttpStatus.BAD_REQUEST,
       );
     }
-
     let raw: any;
     try {
-      raw = await youtubeDl(url, {
+      raw = await ytdlp(url, {
         dumpSingleJson: true,
-        noCheckCertificates: true,
+        noCheckCertificate: true,
         noWarnings: true,
         preferFreeFormats: true,
       });
@@ -107,8 +126,20 @@ export class VideoService {
         error,
       );
     }
-
     const title = raw.title;
+
+    if (cfg.source === 'tiktok') {
+      return {
+        title,
+        options: raw.formats.map((f: any) => ({
+          label: f.resolution,
+          format_id: f.format_id,
+          ext: f.ext,
+          resolution: f.resolution,
+          type: f.dynamic_range,
+        })),
+      };
+    }
 
     const formatsRaw: any = raw.formats || [];
     const mapped = cfg.formats
