@@ -3,16 +3,9 @@
   "formats": [
     {
       "label": "576×1024 mp4 (audio+video)",
-      "format_id": "h264_540p_257542-0",
+      "format_id": "download",
       "ext": "mp4",
-      "resolution": "576x1024",
-      "type": "audio+video"
-    },
-    {
-      "label": "576×1024 mp4 (audio+video)",
-      "format_id": "h264_540p_257542-1",
-      "ext": "mp4",
-      "resolution": "576x1024",
+      "resolution": "null",
       "type": "audio+video"
     }
   ]

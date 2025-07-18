@@ -92,6 +92,7 @@ export class VideoService {
         HttpStatus.BAD_REQUEST,
       );
     }
+
     let raw: any;
     try {
       raw = await youtubeDl(url, {
@@ -106,7 +107,9 @@ export class VideoService {
         error,
       );
     }
+
     const title = raw.title;
+
     const formatsRaw: any = raw.formats || [];
     const mapped = cfg.formats
       .map((opt) => {
