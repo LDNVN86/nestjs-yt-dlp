@@ -7,37 +7,20 @@ import {
 import { PassThrough } from 'stream';
 import { spawn } from 'child_process';
 import { FORMATS_CONFIG, Source } from 'src/constants';
-// import { youtubeDl } from 'youtube-dl-exec';
-import youtubeDl from 'yt-dlp-exec';
+import { youtubeDl } from 'youtube-dl-exec';
+// import youtubeDl from 'yt-dlp-exec';
 import { ConfigService } from '@nestjs/config';
 import ffmpegPath from 'ffmpeg-static';
 @Injectable()
 export class VideoService {
   constructor(private readonly configService: ConfigService) {}
 
-  async metaData(url: string): Promise<{ title: string }> {
-    try {
-      const { title }: any = await youtubeDl(url, {
-        dumpSingleJson: true,
-        noCheckCertificate: true,
-        noWarnings: true,
-        preferFreeFormats: true,
-      });
-      return { title };
-    } catch (error) {
-      throw new HttpException(
-        'Lỗi Url Lấy Thông Tin Tên File',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
   //check format_id
   async BanTumLum(url: string) {
     try {
       const raw: any = await youtubeDl(url, {
         dumpSingleJson: true,
-        noCheckCertificate: true,
+        noCheckCertificates: true,
         noWarnings: true,
         preferFreeFormats: true,
       });
@@ -55,7 +38,7 @@ export class VideoService {
       const direct: any = await youtubeDl(url, {
         format,
         getUrl: true,
-        noCheckCertificate: true,
+        noCheckCertificates: true,
         noWarnings: true,
         preferFreeFormats: true,
       });
@@ -80,7 +63,7 @@ export class VideoService {
     try {
       raw = await youtubeDl(url, {
         dumpSingleJson: true,
-        noCheckCertificate: true,
+        noCheckCertificates: true,
         noWarnings: true,
         preferFreeFormats: true,
       });
@@ -165,7 +148,7 @@ export class VideoService {
         '-referer',
         'https://www.tiktok.com/',
         '-http_persistent',
-        '0', // tắt HTTP persistent
+        '0',
       );
     }
 

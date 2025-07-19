@@ -37,6 +37,7 @@ export class VideoController {
   async mergeDownload(
     @Query('url') url: string,
     @Query('format') format: string,
+    @Query('title') title: string,
     @Res() res: Response,
   ) {
     if (!url || !format) {
@@ -52,7 +53,6 @@ export class VideoController {
       throw new BadRequestException('Nguồn không được hỗ trợ');
     }
 
-    const { title } = await this.videoService.metaData(url);
     let fileName: string;
     let ext: string;
     let safeName: string;
