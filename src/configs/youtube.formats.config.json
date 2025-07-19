@@ -71,6 +71,7 @@
       "resolution": "1920x1080",
       "type": "video"
     },
+
     {
       "label": "360p mp4 (audio+video)",
       "format_id": "18",
@@ -87,14 +88,28 @@
     },
     {
       "label": "720p mp4 (audio+video)",
+      "format_id": "136+140",
+      "ext": "mp4",
+      "resolution": "1280x720",
+      "type": "audio+video"
+    },
+    {
+      "label": "720p mp4 (audio+video)",
       "format_id": "22",
       "ext": "mp4",
       "resolution": "1280x720",
       "type": "audio+video"
     },
     {
-      "label": "1080p mp4 (merge audio)",
+      "label": "1080p mp4 (video+audio)",
       "format_id": "137+140",
+      "ext": "mp4",
+      "resolution": "1920x1080",
+      "type": "audio+video"
+    },
+    {
+      "label": "1080p mp4 (audio+video )",
+      "format_id": "399+140",
       "ext": "mp4",
       "resolution": "1920x1080",
       "type": "audio+video"

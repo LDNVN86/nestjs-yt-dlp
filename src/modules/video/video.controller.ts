@@ -24,20 +24,13 @@ export class VideoController {
     const source = detectSource(url);
     const decoded: string = decodeURIComponent(url);
 
-    return this.videoService.listFormats(decoded, source);
+    return await this.videoService.listFormats(decoded, source);
   }
 
-  //check format_id example you need format_id X, printerest,
+  //check format_id example you need format_id X, printerest,....
   @Get('bantumlum')
   bantumlum(@Query('url') url: string) {
     return this.videoService.BanTumLum(url);
-  }
-
-  @Get('thumbnail')
-  getThumbnail(@Query('url') url: string) {
-    if (!url) throw new BadRequestException('Missing "url" query parameter');
-    const decoded: string = decodeURIComponent(url);
-    return this.videoService.getThumbnails(decoded);
   }
 
   @Get('download')
@@ -51,28 +44,51 @@ export class VideoController {
     }
 
     const decodedUrl = decodeURIComponent(url);
+
     const decodedFormat = format.replace(/\s+/g, '+');
     const source = detectSource(decodedUrl);
     const cfg = FORMATS_CONFIG[source];
     if (!cfg) {
       throw new BadRequestException('Nguồn không được hỗ trợ');
     }
-    if (!cfg.formats.some((f) => f.format_id === decodedFormat)) {
-      throw new BadRequestException(`Định dạng ${decodedFormat} không tồn tại`);
+
+    const { title } = await this.videoService.metaData(url);
+    let fileName: string;
+    let ext: string;
+    let safeName: string;
+    if (cfg.source === 'tiktok') {
+      const check = await this.videoService.listFormats(url, 'tiktok');
+      ext = check.options.map((f: any) =>
+        f.format_id === format ? f.ext : null,
+      );
+
+      const safeName = `${title || `video_${Date.now()}`} `
+        .replace(/[\r\n]+/g, ' ')
+        .replace(/[\/\\?%*:|"<>]/g, '')
+        .trim()
+        .replace(/\s+/g, '_');
+      fileName = `${safeName}.${ext}`;
+    } else {
+      if (!cfg.formats.some((f) => f.format_id === decodedFormat)) {
+        throw new BadRequestException(
+          `Định dạng ${decodedFormat} không tồn tại`,
+        );
+      }
+      ext = cfg.formats.find((f) => f.format_id === decodedFormat)!.ext;
+      safeName = `${title || `video_${Date.now()}`} `
+        .replace(/[\r\n]+/g, ' ')
+        .replace(/[\/\\?%*:|"<>]/g, '')
+        .trim()
+        .replace(/\s+/g, '_');
+      fileName = `${safeName}.${ext}`;
     }
 
-    const ext = cfg.formats.find((f) => f.format_id === decodedFormat)!.ext;
-    const { title } = await this.videoService.metaData(url);
-    const safeName = `${title || `video_${Date.now()}`} `
-      .replace(/[\r\n]+/g, ' ')
-      .replace(/[\/\\?%*:|"<>]/g, '')
-      .trim()
-      .replace(/\s+/g, '_');
-    const filename = `${safeName}.${ext}`;
-
-    res.setHeader('Content-Type', 'video/mp4');
-    res.setHeader('Content-Disposition', contentDisposition(filename));
-    res.setHeader('Transfer-Encoding', 'chunked');
+    const isAudio = ext === 'm4a';
+    res.set({
+      'Content-Type': isAudio ? 'audio/mp4' : 'video/mp4',
+      'Content-Disposition': contentDisposition(fileName),
+      'Transfer-Encoding': 'chunked',
+    });
     res.flushHeaders();
 
     const stream = await this.videoService.mergeAndStream(

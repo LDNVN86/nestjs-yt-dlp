@@ -7,36 +7,17 @@ import {
 import { PassThrough } from 'stream';
 import { spawn } from 'child_process';
 import { FORMATS_CONFIG, Source } from 'src/constants';
-// import { ytdlp } from 'youtube-dl-exec';
-import ytdlp from 'yt-dlp-exec';
+// import { youtubeDl } from 'youtube-dl-exec';
+import youtubeDl from 'yt-dlp-exec';
 import { ConfigService } from '@nestjs/config';
 import ffmpegPath from 'ffmpeg-static';
 @Injectable()
 export class VideoService {
   constructor(private readonly configService: ConfigService) {}
 
-  // private getBaseYtdlpOptions() {
-  //   const agent = this.configService.get<string>('USER_AGENT');
-  //   const cookieFile = this.configService.get<string>('YTDLP_COOKIE_FILE');
-  //   const referer = this.configService.get<string>('TIKTOK_REFERER');
-
-  //   return {
-  //     dumpSingleJson: true,
-  //     noCheckCertificate: true,
-  //     noWarnings: true,
-  //     preferFreeFormats: true,
-  //     addHeader: [`User-Agent: ${agent}`, `Referer: ${referer}`],
-  //     extractorArgs: {
-  //       tiktok: {
-  //         cookiefile: cookieFile,
-  //       },
-  //     },
-  //   } as const;
-  // }
-
   async metaData(url: string): Promise<{ title: string }> {
     try {
-      const { title }: any = await ytdlp(url, {
+      const { title }: any = await youtubeDl(url, {
         dumpSingleJson: true,
         noCheckCertificate: true,
         noWarnings: true,
@@ -51,27 +32,10 @@ export class VideoService {
     }
   }
 
-  async getThumbnails(url: string) {
-    try {
-      const raw: any = await ytdlp(url, {
-        dumpSingleJson: true,
-        noCheckCertificate: true,
-        noWarnings: true,
-        preferFreeFormats: true,
-      });
-      return raw.thumbnail;
-    } catch (error) {
-      throw new HttpException(
-        'Lỗi Url Lấy Thông Tin Tên File',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
   //check format_id
   async BanTumLum(url: string) {
     try {
-      const raw: any = await ytdlp(url, {
+      const raw: any = await youtubeDl(url, {
         dumpSingleJson: true,
         noCheckCertificate: true,
         noWarnings: true,
@@ -88,7 +52,7 @@ export class VideoService {
 
   async getDirectUrl(url: string, format: string): Promise<string> {
     try {
-      const direct: any = await ytdlp(url, {
+      const direct: any = await youtubeDl(url, {
         format,
         getUrl: true,
         noCheckCertificate: true,
@@ -114,7 +78,7 @@ export class VideoService {
     }
     let raw: any;
     try {
-      raw = await ytdlp(url, {
+      raw = await youtubeDl(url, {
         dumpSingleJson: true,
         noCheckCertificate: true,
         noWarnings: true,
@@ -127,10 +91,12 @@ export class VideoService {
       );
     }
     const title = raw.title;
+    const thumbnail = raw.thumbnail;
 
     if (cfg.source === 'tiktok') {
       return {
         title,
+        thumbnail,
         options: raw.formats.map((f: any) => ({
           label: f.resolution,
           format_id: f.format_id,
@@ -142,7 +108,7 @@ export class VideoService {
     }
 
     const formatsRaw: any = raw.formats || [];
-    const mapped = cfg.formats
+    const mapped = await cfg.formats
       .map((opt) => {
         const id = opt.format_id;
         if (id.includes('+')) {
@@ -164,6 +130,7 @@ export class VideoService {
 
     return {
       title,
+      thumbnail,
       options: mapped,
     };
   }
@@ -188,22 +155,54 @@ export class VideoService {
       videoUrl = await this.getDirectUrl(url, format);
     }
 
-    const args: string[] = [];
-    args.push('-i', videoUrl);
-    if (audioUrl) {
-      args.push('-i', audioUrl);
+    const commonFlags: string[] = [];
+    if (url.includes('tiktok.com')) {
+      commonFlags.push(
+        '-user_agent',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+          'AppleWebKit/537.36 (KHTML, like Gecko) ' +
+          'Chrome/115.0.0.0 Safari/537.36',
+        '-referer',
+        'https://www.tiktok.com/',
+        '-http_persistent',
+        '0', // tắt HTTP persistent
+      );
     }
-    args.push(
-      '-c:v',
-      'copy',
-      '-c:a',
-      'copy',
-      '-f',
-      ext,
-      '-movflags',
-      '+frag_keyframe+empty_moov+faststart',
-      'pipe:1',
-    );
+
+    const args: string[] = [];
+    args.push(...commonFlags, '-i', videoUrl);
+    if (audioUrl) {
+      args.push(...commonFlags, '-i', audioUrl);
+    }
+
+    if (ext === 'm4a') {
+      args.push(
+        '-map',
+        '0:a:0',
+        '-vn',
+        '-c:a',
+        'aac',
+        '-b:a',
+        '192k',
+        '-movflags',
+        '+frag_keyframe+empty_moov+default_base_moof+separate_moof',
+        '-f',
+        'mp4',
+        'pipe:1',
+      );
+    } else {
+      args.push(
+        '-c:v',
+        'copy',
+        '-c:a',
+        'copy',
+        '-movflags',
+        '+frag_keyframe+empty_moov+faststart',
+        '-f',
+        ext,
+        'pipe:1',
+      );
+    }
 
     const proc = spawn(ffmpegPath!, args, {
       stdio: ['ignore', 'pipe', 'pipe'],
