@@ -7,8 +7,8 @@ import {
 import { PassThrough } from 'stream';
 import { spawn } from 'child_process';
 import { FORMATS_CONFIG, Source } from 'src/constants';
-import { youtubeDl } from 'youtube-dl-exec';
-// import youtubeDl from 'yt-dlp-exec';
+// import { youtubeDl } from 'youtube-dl-exec';
+import youtubeDl from 'yt-dlp-exec';
 import { ConfigService } from '@nestjs/config';
 import ffmpegPath from 'ffmpeg-static';
 @Injectable()
@@ -20,7 +20,7 @@ export class VideoService {
     try {
       const raw: any = await youtubeDl(url, {
         dumpSingleJson: true,
-        noCheckCertificates: true,
+        noCheckCertificate: true,
         noWarnings: true,
         preferFreeFormats: true,
       });
@@ -28,24 +28,6 @@ export class VideoService {
     } catch (error) {
       throw new HttpException(
         'Lỗi Url Lấy Thông Tin Tên File',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
-  async getDirectUrl(url: string, format: string): Promise<string> {
-    try {
-      const direct: any = await youtubeDl(url, {
-        format,
-        getUrl: true,
-        noCheckCertificates: true,
-        noWarnings: true,
-        preferFreeFormats: true,
-      });
-      return direct.trim();
-    } catch (err) {
-      throw new HttpException(
-        'Không thể lấy direct URL',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -63,7 +45,7 @@ export class VideoService {
     try {
       raw = await youtubeDl(url, {
         dumpSingleJson: true,
-        noCheckCertificates: true,
+        noCheckCertificate: true,
         noWarnings: true,
         preferFreeFormats: true,
       });
@@ -124,70 +106,32 @@ export class VideoService {
     ext: string,
   ): Promise<PassThrough> {
     const stream = new PassThrough();
-
-    let videoUrl: string;
-    let audioUrl: string | null = null;
-
-    if (format.includes('+')) {
-      const [vid, adu] = format.split('+');
-      [videoUrl, audioUrl] = await Promise.all([
-        this.getDirectUrl(url, vid),
-        this.getDirectUrl(url, adu),
-      ]);
-    } else {
-      videoUrl = await this.getDirectUrl(url, format);
+    const path = this.configService.get<string>('YTDL_PATH') || 'yt-dlp';
+    if (!path) {
+      throw new HttpException('Không tìm thấy yt-dlp', HttpStatus.BAD_REQUEST);
     }
+    const IsVidAndAud: boolean = format.includes('+');
 
-    const commonFlags: string[] = [];
-    if (url.includes('tiktok.com')) {
-      commonFlags.push(
-        '-user_agent',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
-          'AppleWebKit/537.36 (KHTML, like Gecko) ' +
-          'Chrome/115.0.0.0 Safari/537.36',
-        '-referer',
-        'https://www.tiktok.com/',
-        '-http_persistent',
-        '0',
-      );
-    }
+    const args = [
+      url,
+      '-f',
+      format,
+      ...(IsVidAndAud
+        ? [
+            '--merge-output-format',
+            ext,
+            '--ffmpeg-location',
+            ffmpegPath!,
+            '--postprocessor-args',
+            '-movflags +frag_keyframe+empty_moov+faststart',
+          ]
+        : []),
+      '--no-check-certificate',
+      '-o',
+      '-',
+    ];
 
-    const args: string[] = [];
-    args.push(...commonFlags, '-i', videoUrl);
-    if (audioUrl) {
-      args.push(...commonFlags, '-i', audioUrl);
-    }
-
-    if (ext === 'm4a') {
-      args.push(
-        '-map',
-        '0:a:0',
-        '-vn',
-        '-c:a',
-        'aac',
-        '-b:a',
-        '192k',
-        '-movflags',
-        '+frag_keyframe+empty_moov+default_base_moof+separate_moof',
-        '-f',
-        'mp4',
-        'pipe:1',
-      );
-    } else {
-      args.push(
-        '-c:v',
-        'copy',
-        '-c:a',
-        'copy',
-        '-movflags',
-        '+frag_keyframe+empty_moov+faststart',
-        '-f',
-        ext,
-        'pipe:1',
-      );
-    }
-
-    const proc = spawn(ffmpegPath!, args, {
+    const proc = spawn(path, args, {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
