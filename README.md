@@ -1,3 +1,245 @@
+# nestjs-yt-dlp
+
+<!-- Bilingual README: Vietnamese / English -->
+
+## Cấu trúc thư mục (độ sâu 2)
+
+````bash
+nestjs-yt-dlp/
+├── src/
+│   ├── main.ts
+│   ├── app.module.ts
+│   ├── app.controller.ts
+│   └── app.service.ts
+├── yt-dlp/
+│   ├── yt-dlp.module.ts
+│   ├── yt-dlp.controller.ts
+│   └── yt-dlp.service.ts
+├── test/
+│   └── app.e2e-spec.ts
+├── .env.example
+├── .gitignore
+├── .prettierrc
+├── Aptfile
+├── README.md
+├── eslint.config.mjs
+├── nest-cli.json
+├── package.json
+├── package-lock.json
+├── tsconfig.build.json
+├── tsconfig.json
+```bash
+nestjs-yt-dlp/
+├── src/                  # Mã nguồn chính của ứng dụng
+│   ├── main.ts           # Entry point (thiết lập NestFactory)
+│   ├── app.module.ts     # Module gốc
+│   ├── app.controller.ts # Controller ví dụ (nếu có)
+│   └── app.service.ts    # Service ví dụ (nếu có)
+├── yt-dlp/               # Module xử lý yt-dlp
+│   ├── yt-dlp.module.ts      # Đăng ký module
+│   ├── yt-dlp.controller.ts  # Định nghĩa API endpoints
+│   └── yt-dlp.service.ts     # Logic tương tác với yt-dlp
+├── test/                 # Unit & e2e tests
+│   └── app.e2e-spec.ts   # Ví dụ kiểm thử end-to-end
+├── .env.example          # Mẫu biến môi trường
+├── .gitignore            # Loại trừ file khi commit
+├── .prettierrc           # Cấu hình Prettier
+├── Aptfile               # (Vercel) cài đặt gói hệ thống
+├── README.md             # File README này
+├── eslint.config.mjs     # Cấu hình ESLint
+├── nest-cli.json         # Cấu hình Nest CLI
+├── package.json          # Dependencies & scripts
+├── package-lock.json     # Khóa phiên bản npm
+├── tsconfig.json         # Cấu hình TypeScript
+└── tsconfig.build.json   # Cấu hình build cho Nest
+````
+
+## 🇻🇳 Giới thiệu
+
+`nestjs-yt-dlp` là backend API chuyên nghiệp cho yt-dlp, xây dựng trên nền tảng NestJS, hỗ trợ tải video từ YouTube, Facebook, Instagram, TikTok…
+
+## 🇬🇧 Introduction
+
+`nestjs-yt-dlp` is a professional backend API for yt-dlp, built with NestJS framework, supporting video downloads from YouTube, Facebook, Instagram, TikTok, and more.
+
+---
+
+## 🇻🇳 Tính năng chính
+
+* **Đa nền tảng**: Hỗ trợ YouTube, Facebook, Instagram, TikTok, v.v.
+* **RESTful API**: Định nghĩa rõ ràng, dễ tích hợp với frontend.
+* **Xử lý song song**: Tối ưu hiệu suất khi có nhiều yêu cầu đồng thời.
+* **Cấu hình linh hoạt**: Sử dụng biến môi trường để tùy chỉnh.
+* **Logging & Error Handling**: Ghi log đầy đủ, thông báo lỗi rõ ràng.
+
+## 🇬🇧 Key Features
+
+* **Cross-platform**: Supports YouTube, Facebook, Instagram, TikTok, etc.
+* **RESTful API**: Clear endpoints for easy frontend integration.
+* **Concurrency**: Efficient handling of multiple download requests.
+* **Configurable**: Environment variables for customization.
+* **Logging & Error Handling**: Comprehensive logs and clear error responses.
+
+---
+
+## 🇻🇳 Công nghệ sử dụng
+
+* **NestJS** (v10.x)
+* **TypeScript**
+* **yt-dlp** (thông qua child\_process)
+* **dotenv** (quản lý biến môi trường)
+* **Swagger** (tài liệu API)
+* **Jest** (kiểm thử)
+
+## 🇬🇧 Tech Stack
+
+* **NestJS** (v10.x)
+* **TypeScript**
+* **yt-dlp** (via child\_process)
+* **dotenv**
+* **Swagger**
+* **Jest**
+
+---
+
+## 🇻🇳 Cài đặt & Chạy dự án
+
+```bash
+# Clone repository
+git clone https://github.com/LDNVN86/nestjs-yt-dlp.git
+cd nestjs-yt-dlp
+
+# Cài đặt dependencies
+npm install
+# hoặc yarn
+\ n# Tạo file môi trường
+cp .env.example .env
+# Điền các biến: PORT, YTDLP_OPTIONS...
+
+# Chạy ứng dụng (dev)
+npm run start:dev
+```
+
+## 🇬🇧 Installation & Running
+
+```bash
+# Clone repository
+git clone https://github.com/LDNVN86/nestjs-yt-dlp.git
+cd nestjs-yt-dlp
+
+# Install dependencies
+npm install
+# or yarn
+
+# Setup environment
+cp .env.example .env
+# Fill in: PORT, YTDLP_OPTIONS...
+
+# Run application (dev)
+npm run start:dev
+```
+
+---
+
+## 🇻🇳 Sử dụng
+
+* GET `/yt-dlp/info?url=<VIDEO_URL>`: Lấy metadata video. (tùy chỉnh url của bạn)
+* GET `/yt-dlp/download`: Tải xuống video/audio.  (tùy chỉnh url của bạn)
+
+## 🇬🇧 Usage
+
+* GET `/yt-dlp/info?url=<VIDEO_URL>`: Fetch video metadata.  (customize your url)
+* GET `/yt-dlp/download`: Download video/audio. (customize your url)
+
+---
+
+## 🇻🇳 Kiểm thử
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+```
+
+## 🇬🇧 Testing
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+```
+
+---
+
+## 🇻🇳 Triển khai & Docker
+
+```bash
+# Build
+npm run build
+
+# Chạy production
+npm run start:prod
+
+# Docker
+docker build -t nestjs-yt-dlp .
+docker run -p 3000:3000 --env-file .env nestjs-yt-dlp
+```
+
+## 🇬🇧 Deployment & Docker
+
+```bash
+# Build
+npm run build
+
+# Run production
+npm run start:prod
+
+# Docker
+docker build -t nestjs-yt-dlp .
+docker run -p 3000:3000 --env-file .env nestjs-yt-dlp
+```
+
+---
+
+## 🇻🇳 Contributing
+
+1. Fork repo.
+2. Tạo branch: `git checkout -b feature/your-feature`.
+3. Commit: `git commit -m "feat: thêm tính năng XXX"`.
+4. Push & PR.
+
+## 🇬🇧 Contributing
+
+1. Fork this repo.
+2. Create branch: `git checkout -b feature/your-feature`.
+3. Commit: `git commit -m "feat: add feature XXX"`.
+4. Push & open a PR.
+
+---
+
+## 🇻🇳 License
+
+Phát hành theo **MIT License**. Xem tại [LICENSE](./LICENSE).
+
+## 🇬🇧 License
+
+Released under the **MIT License**. See [LICENSE](./LICENSE) for details.
+
+---
+
+## 🇻🇳 Tác giả
+
+**LDNVN86** – [GitHub](https://github.com/LDNVN86)
+
+## 🇬🇧 Author
+
+**LDNVN86** – [GitHub](https://github.com/LDNVN86)
+
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
