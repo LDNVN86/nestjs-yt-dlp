@@ -132,13 +132,14 @@ export class VideoService {
             '--ffmpeg-location',
             ffmpegPath!,
             '--postprocessor-args',
-            `ffmpeg:-movflags +frag_keyframe+empty_moov+faststart`,
+            '-movflags +frag_keyframe+empty_moov+faststart',
           ]
         : []),
       '--no-check-certificate',
       '-o',
       '-',
     ];
+
     const proc = spawn(path, args, {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
