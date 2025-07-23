@@ -143,13 +143,13 @@ npm run start:dev
 
 ## 🇻🇳 Sử dụng
 
-* GET `/yt-dlp/info?url=<VIDEO_URL>`: Lấy metadata video. (tùy chỉnh url của bạn)
-* GET `/yt-dlp/download`: Tải xuống video/audio.  (tùy chỉnh url của bạn)
+* GET `/yt-dlp/info?url=<VIDEO_URL>`: Lấy metadata video.
+* POST `/yt-dlp/download`: Tải xuống video/audio.
 
 ## 🇬🇧 Usage
 
-* GET `/yt-dlp/info?url=<VIDEO_URL>`: Fetch video metadata.  (customize your url)
-* GET `/yt-dlp/download`: Download video/audio. (customize your url)
+* GET `/yt-dlp/info?url=<VIDEO_URL>`: Fetch video metadata.
+* POST `/yt-dlp/download`: Download video/audio.
 
 ---
 
@@ -204,6 +204,56 @@ docker run -p 3000:3000 --env-file .env nestjs-yt-dlp
 ```
 
 ---
+
+## 🇻🇳 Tài liệu API & Xử lý sự cố
+
+### 🇻🇳 Endpoints
+→ Tùy Chỉnh Endpoint riêng của bạn
+* **GET /video/redirect?url=<URL>\&format=<FORMAT>**
+  Trả về 302 redirect tới direct download link, cho phép client sử dụng hoàn toàn băng thông riêng của họ.
+* **GET /video/get-merged?url=<URL>\&format=399+140\&ext=mp4**
+  Merge video và audio trên server lưu file tạm, sau đó redirect tới file đã merge.
+* **GET /yt-dlp/info**
+  Lấy metadata video dưới dạng JSON.
+
+### 🇻🇳 Xử lý sự cố phổ biến
+
+* **ffmpeg exited with code -11 (segfault)**
+
+  * Nguyên nhân: ffmpeg-static không tương thích hoặc flags không hỗ trợ.
+  * Khắc phục: chuyển sang FFmpeg hệ thống (`sudo apt-get install ffmpeg`) hoặc dùng bản static build khác; giới hạn luồng với `-threads 1`; loại bỏ flags không tương thích; hoặc merge thủ công qua pipe.
+* **command 'ffmpeg' not found**
+
+  * Cài đặt: `sudo apt-get install ffmpeg` hoặc thêm PPA rồi cài.
+* **Tốc độ download chậm/giới hạn**
+
+  * Xem file redirect method cho client download trực tiếp (GET /video/redirect) để dùng tốc độ mạng của họ.
+
+---
+
+## 🇬🇧 API Documentation & Troubleshooting
+
+### 🇬🇧 Endpoints
+→ Customize your Custompoint Endpoint
+* **GET /video/redirect?url=<URL>\&format=<FORMAT>**
+  Returns a 302 redirect to the direct download link, allowing clients to download at their own network speed.
+* **GET /video/get-merged?url=<URL>\&format=399+140\&ext=mp4**
+  Merges video and audio on the server, stores a temporary file, then redirects to the merged file.
+* **GET /yt-dlp/info**
+  Fetches video metadata as JSON.
+
+### 🇬🇧 Common Issues
+
+* **Error 'ffmpeg exited with code -11' (segfault)**
+
+  * Cause: Incompatible ffmpeg-static binary or unsupported flags.
+  * Fix: Use system ffmpeg (`sudo apt-get install ffmpeg`) or an alternative static build; limit threads with `-threads 1`; remove conflicting flags; or perform manual merging via pipe.
+* **Error 'command 'ffmpeg' not found'**
+
+  * Install: `sudo apt-get install ffmpeg` or add a PPA.
+* **Slow or limited download speed**
+
+  * Use the redirect endpoint (GET /video/redirect) to let clients download directly at their own bandwidth.
 
 ## 🇻🇳 Contributing
 
