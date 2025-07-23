@@ -115,6 +115,16 @@ export class VideoService {
       url,
       '-f',
       format,
+      '--sleep-interval',
+      '5',
+      '--max-sleep-interval',
+      '10',
+      '--retries',
+      '10',
+      '--fragment-retries',
+      '10',
+      '--geo-bypass',
+      '--no-warnings',
       ...(IsVidAndAud
         ? [
             '--merge-output-format',
@@ -122,14 +132,13 @@ export class VideoService {
             '--ffmpeg-location',
             ffmpegPath!,
             '--postprocessor-args',
-            '-movflags +frag_keyframe+empty_moov+faststart',
+            `ffmpeg:-movflags +frag_keyframe+empty_moov+faststart`,
           ]
         : []),
       '--no-check-certificate',
       '-o',
       '-',
     ];
-
     const proc = spawn(path, args, {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
