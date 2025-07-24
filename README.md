@@ -7,6 +7,9 @@
 ````bash
 nestjs-yt-dlp/
 ├── src/
+│   ├── modules/
+│       ├── video/
+│           ├── video.controller.ts 
 │   ├── main.ts
 │   ├── app.module.ts
 │   ├── app.controller.ts
