@@ -9,15 +9,13 @@ nestjs-yt-dlp/
 ├── src/
 │   ├── modules/
 │       ├── video/
-│           ├── video.controller.ts 
+│           ├── video.controller.ts
+│           ├── video.module.ts
+│           ├── video.service.ts
 │   ├── main.ts
 │   ├── app.module.ts
 │   ├── app.controller.ts
 │   └── app.service.ts
-├── yt-dlp/
-│   ├── yt-dlp.module.ts
-│   ├── yt-dlp.controller.ts
-│   └── yt-dlp.service.ts
 ├── test/
 │   └── app.e2e-spec.ts
 ├── .env.example
