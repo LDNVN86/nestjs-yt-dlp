@@ -6,12 +6,19 @@ import {
   Res,
   UsePipes,
 } from '@nestjs/common';
-import { VideoService } from './video.service';
+import { VideoService, FormatType } from './video.service';
 import { Response } from 'express';
 import { detectSource } from 'src/utils/detect-source';
 import contentDisposition from 'content-disposition';
 import { FORMATS_CONFIG } from 'src/constants';
 import { UrlValidationPipe } from 'src/common/pipes/url-validation.pipe';
+
+const MIME_BY_EXTENSION: Record<string, string> = {
+  mp4: 'video/mp4',
+  webm: 'video/webm',
+  m4a: 'audio/mp4',
+  mp3: 'audio/mpeg',
+};
 
 @Controller('video')
 export class VideoController {
@@ -22,7 +29,7 @@ export class VideoController {
   async format(@Query('url') url: string) {
     if (!url) throw new BadRequestException('Missing "url" query parameter');
     const source = detectSource(url);
-    const decoded: string = decodeURIComponent(url);
+    const decoded = this.safeDecode(url) ?? url;
 
     return await this.videoService.listFormats(decoded, source);
   }
@@ -44,48 +51,63 @@ export class VideoController {
       throw new BadRequestException('Vui lòng nhập URL và chọn định dạng');
     }
 
-    const decodedUrl = decodeURIComponent(url);
-
-    const decodedFormat = format.replace(/\s+/g, '+');
+    const decodedUrl = this.safeDecode(url) ?? url;
+    const normalizedFormat = this.normalizeFormat(format);
+    if (!normalizedFormat) {
+      throw new BadRequestException('Định dạng không hợp lệ');
+    }
+    const providedTitle = this.safeDecode(title);
     const source = detectSource(decodedUrl);
     const cfg = FORMATS_CONFIG[source];
     if (!cfg) {
       throw new BadRequestException('Nguồn không được hỗ trợ');
     }
 
-    let fileName: string;
-    let ext: string;
-    let safeName: string;
-    if (cfg.source === 'tiktok') {
-      const check = await this.videoService.listFormats(url, 'tiktok');
-      ext = check.options.map((f: any) =>
-        f.format_id === format ? f.ext : null,
-      );
+    let fileExt: string;
+    let formatType: FormatType = 'video';
+    let resolvedTitle = providedTitle;
 
-      const safeName = `${title || `video_${Date.now()}`} `
-        .replace(/[\r\n]+/g, ' ')
-        .replace(/[\/\\?%*:|"<>]/g, '')
-        .trim()
-        .replace(/\s+/g, '_');
-      fileName = `${safeName}.${ext}`;
-    } else {
-      if (!cfg.formats.some((f) => f.format_id === decodedFormat)) {
+    if (cfg.source === 'tiktok') {
+      const list = await this.videoService.listFormats(decodedUrl, 'tiktok');
+      const selected = list.options.find(
+        (opt: any) => opt.format_id === normalizedFormat,
+      );
+      if (!selected) {
         throw new BadRequestException(
-          `Định dạng ${decodedFormat} không tồn tại`,
+          `Định dạng ${normalizedFormat} không tồn tại`,
         );
       }
-      ext = cfg.formats.find((f) => f.format_id === decodedFormat)!.ext;
-      safeName = `${title || `video_${Date.now()}`} `
-        .replace(/[\r\n]+/g, ' ')
-        .replace(/[\/\\?%*:|"<>]/g, '')
-        .trim()
-        .replace(/\s+/g, '_');
-      fileName = `${safeName}.${ext}`;
+      fileExt = selected.ext;
+      formatType = selected.type as FormatType;
+      resolvedTitle = resolvedTitle ?? list.title;
+    } else {
+      const matched = cfg.formats.find(
+        (f) => f.format_id === normalizedFormat,
+      );
+      if (matched) {
+        fileExt = matched.ext;
+        formatType = matched.type as FormatType;
+      } else {
+        const list = await this.videoService.listFormats(decodedUrl, source);
+        const dynamic = list.options.find(
+          (opt) => opt.format_id === normalizedFormat,
+        );
+        if (!dynamic) {
+          throw new BadRequestException(
+            `Định dạng ${normalizedFormat} không tồn tại`,
+          );
+        }
+        fileExt = dynamic.ext;
+        formatType = dynamic.type as FormatType;
+        resolvedTitle = resolvedTitle ?? list.title;
+      }
     }
 
-    const isAudio = ext === 'm4a';
+    const safeName = this.buildSafeFileName(resolvedTitle);
+    const fileName = `${safeName}.${fileExt}`;
+    const contentType = this.resolveMimeType(fileExt, formatType);
     res.set({
-      'Content-Type': isAudio ? 'audio/mp4' : 'video/mp4',
+      'Content-Type': contentType,
       'Content-Disposition': contentDisposition(fileName),
       'Transfer-Encoding': 'chunked',
     });
@@ -93,8 +115,8 @@ export class VideoController {
 
     const stream = await this.videoService.mergeAndStream(
       decodedUrl,
-      decodedFormat,
-      ext,
+      normalizedFormat,
+      fileExt,
     );
     stream.pipe(res);
 
@@ -109,5 +131,42 @@ export class VideoController {
         res.end();
       }
     });
+  }
+
+  private safeDecode(value?: string): string | undefined {
+    if (value === undefined || value === null) {
+      return undefined;
+    }
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  }
+
+  private normalizeFormat(value: string): string {
+    const decoded = this.safeDecode(value) ?? value;
+    return decoded.replace(/\s+/g, '+').trim();
+  }
+
+  private buildSafeFileName(rawTitle?: string): string {
+    const fallback = rawTitle?.trim() || `video_${Date.now()}`;
+    return fallback
+      .replace(/[\r\n]+/g, ' ')
+      .replace(/[\/\\?%*:|"<>]/g, '')
+      .trim()
+      .replace(/\s+/g, '_');
+  }
+
+  private resolveMimeType(ext: string, type: FormatType): string {
+    const normalizedExt = ext.toLowerCase();
+    const predefined = MIME_BY_EXTENSION[normalizedExt];
+    if (predefined) {
+      return predefined;
+    }
+    if (type === 'audio') {
+      return `audio/${normalizedExt}`;
+    }
+    return `video/${normalizedExt}`;
   }
 }
